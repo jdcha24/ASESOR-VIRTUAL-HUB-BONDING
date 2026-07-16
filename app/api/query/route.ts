@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     // ── 3. Llamar a Gemini con el System Prompt RAG ──────
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
+      model: "gemini-flash-latest",
       systemInstruction: systemPrompt,
       generationConfig: {
         temperature: 0.1, // Baja temperatura para consistencia

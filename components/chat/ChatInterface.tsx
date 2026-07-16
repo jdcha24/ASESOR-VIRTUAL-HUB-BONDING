@@ -261,7 +261,10 @@ export function ChatInterface() {
           flexShrink: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div 
+          className="pl-12 md:pl-0"
+          style={{ display: "flex", alignItems: "center", gap: 12 }}
+        >
           <div
             style={{
               width: 40,
@@ -450,14 +453,13 @@ export function ChatInterface() {
         }}
       >
         <div
+          className="gap-1.5 md:gap-2.5 p-2 md:p-3"
           style={{
             display: "flex",
             alignItems: "flex-end",
-            gap: 10,
             background: "var(--bg-input)",
             border: "1.5px solid var(--border-default)",
             borderRadius: "var(--radius-lg)",
-            padding: "10px 12px",
             transition: "border-color 0.15s ease",
           }}
         >
@@ -488,8 +490,8 @@ export function ChatInterface() {
             onKeyDown={handleKeyDown}
             placeholder={
               imageBase64
-                ? "Describe el defecto o presiona Enviar para analizar la imagen..."
-                : "Escribe tu consulta o usa el micrófono..."
+                ? "Describe el defecto..."
+                : "Escribe tu consulta..."
             }
             disabled={isSending}
             rows={1}
