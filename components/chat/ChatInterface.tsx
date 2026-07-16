@@ -145,6 +145,14 @@ export function ChatInterface() {
 
         const aiData: AIQueryResponse = json.data;
 
+        // LOG DE CONSOLA CRÍTICO EN EL NAVEGADOR
+        console.log("==========================================");
+        console.log("[CLIENT] Respuesta recibida del servidor:");
+        console.log(`Longitud: ${aiData.response?.length} caracteres`);
+        console.log("Respuesta:");
+        console.log(aiData.response);
+        console.log("==========================================");
+
         // Actualizar el mensaje placeholder con la respuesta real
         setMessages((prev) =>
           prev.map((m) =>

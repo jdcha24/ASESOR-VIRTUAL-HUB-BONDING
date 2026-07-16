@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       },
       generationConfig: {
         temperature: 0.1, // Baja temperatura para consistencia
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048, // Aumentar para evitar cualquier corte por tokens
       },
     });
 
@@ -129,6 +129,13 @@ export async function POST(req: NextRequest) {
     ];
 
     const responseText = await callGeminiWithRetry(model, contents);
+
+    // LOG DE CONSOLA CRÍTICO EN EL SERVIDOR para auditar la respuesta original
+    console.log("==========================================");
+    console.log(`[API RESPONSE] Longitud original: ${responseText.length} caracteres`);
+    console.log("Respuesta obtenida de la API:");
+    console.log(responseText);
+    console.log("==========================================");
 
     // ── 4. Evaluar escalación ───────────────────────────
     const { escalated, confidence } = evaluateEscalation(
