@@ -99,14 +99,22 @@ export async function POST(req: NextRequest) {
         },
       });
       userParts.push({
-        text: "Analiza esta imagen en el contexto del procedimiento de inspección visual de catéteres y los criterios de aceptación dados.",
+        text: "Analiza esta imagen adjunta en el contexto del procedimiento de inspección visual de catéteres y los criterios de aceptación especificados.",
       });
     }
 
-    // ── 3. Llamar a Gemini con el System Prompt RAG ──────
+    // Refuerzo explícito de idioma y completitud al final del prompt
+    userParts.push({
+      text: "\nIMPORTANTE: Debes responder obligatoriamente en ESPAÑOL. Proporciona una respuesta completa y detallada sin cortarte a la mitad. Sigue las reglas de formato: indica si se acepta o rechaza al inicio, explica el criterio técnico en español, y cita la sección de referencia al final en el formato [REF: Sección X.X].",
+    });
+
+    // ── 3. Llamar a Gemini con el System Prompt RAG estructurado ──────
     const model = genAI.getGenerativeModel({
       model: "gemini-flash-latest",
-      systemInstruction: systemPrompt,
+      systemInstruction: {
+        role: "system",
+        parts: [{ text: systemPrompt }],
+      },
       generationConfig: {
         temperature: 0.1, // Baja temperatura para consistencia
         maxOutputTokens: 1024,
