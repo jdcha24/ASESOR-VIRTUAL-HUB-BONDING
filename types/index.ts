@@ -102,6 +102,11 @@ export interface ChatMessage {
   escalated?: boolean;
 }
 
+export interface HistoryMessage {
+  role: "user" | "model";
+  content: string;
+}
+
 // ── Payload enviado al Route Handler /api/query ────────────
 export interface QueryPayload {
   queryText: string;
@@ -109,6 +114,7 @@ export interface QueryPayload {
   sessionId: string;
   imageBase64?: string;
   imageMimeType?: string;
+  history?: HistoryMessage[];
 }
 
 // ── Chunk de base de conocimiento RAG ─────────────────────

@@ -124,6 +124,16 @@ export function ChatInterface() {
       setImageMimeType(null);
       setImagePreviewUrl(null);
 
+      // Construir historial de mensajes completados para la IA (excluyendo el primero de bienvenida)
+      const chatHistory = messages
+        .slice(1) // Omitir el primer mensaje estático de bienvenida
+        .filter((m) => m.status === "done" || m.status === "escalated")
+        .map((m) => ({
+          role: m.role === "assistant" ? ("model" as const) : ("user" as const),
+          content: m.content,
+        }))
+        .slice(-6); // Mantener los últimos 6 mensajes para contexto
+
       try {
         const res = await fetch("/api/query", {
           method: "POST",
@@ -134,6 +144,7 @@ export function ChatInterface() {
             sessionId: SESSION_ID,
             imageBase64: base64ToSend ?? undefined,
             imageMimeType: mimeToSend ?? undefined,
+            history: chatHistory,
           }),
         });
 

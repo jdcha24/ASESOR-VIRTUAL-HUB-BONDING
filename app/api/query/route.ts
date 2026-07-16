@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body: QueryPayload = await req.json();
-    const { queryText, queryType, sessionId, imageBase64, imageMimeType } =
+    const { queryText, queryType, sessionId, imageBase64, imageMimeType, history } =
       body;
 
     if (!queryText || queryText.trim().length === 0) {
@@ -81,14 +81,14 @@ export async function POST(req: NextRequest) {
     // Recupera los chunks de texto pre-extraídos que coinciden
     const { systemPrompt, ragRefs } = buildRagContext(queryText, 5);
 
-    // ── 2. Construir partes del mensaje para Gemini ──────
-    const userParts: Part[] = [{ text: queryText }];
+    // ── 2. Construir partes del mensaje actual del operario ──────
+    const currentUserParts: Part[] = [{ text: queryText }];
     let imageDescription = "";
     const hadImage = !!imageBase64;
 
     // Procesamiento efímero de imágenes
     if (imageBase64 && imageMimeType) {
-      userParts.push({
+      currentUserParts.push({
         inlineData: {
           data: imageBase64,
           mimeType: imageMimeType as
@@ -98,13 +98,13 @@ export async function POST(req: NextRequest) {
             | "image/heic",
         },
       });
-      userParts.push({
+      currentUserParts.push({
         text: "Analiza esta imagen adjunta en el contexto del procedimiento de inspección visual de catéteres y los criterios de aceptación especificados.",
       });
     }
 
-    // Refuerzo explícito de idioma y completitud al final del prompt
-    userParts.push({
+    // Refuerzo explícito de idioma y completitud al final de este turno
+    currentUserParts.push({
       text: "\nIMPORTANTE: Debes responder obligatoriamente en ESPAÑOL. Proporciona una respuesta completa y detallada sin cortarte a la mitad. Sigue las reglas de formato: indica si se acepta o rechaza al inicio, explica el criterio técnico en español, y cita la sección de referencia al final en el formato [REF: Sección X.X].",
     });
 
@@ -117,16 +117,28 @@ export async function POST(req: NextRequest) {
       },
       generationConfig: {
         temperature: 0.1, // Baja temperatura para consistencia
-        maxOutputTokens: 2048, // Aumentar para evitar cualquier corte por tokens
+        maxOutputTokens: 2048,
       },
     });
 
-    const contents: Content[] = [
-      {
-        role: "user",
-        parts: userParts,
-      },
-    ];
+    // Construir el historial completo alternado de turnos
+    const contents: Content[] = [];
+
+    // Cargar historial previo si existe
+    if (history && history.length > 0) {
+      history.forEach((turn) => {
+        contents.push({
+          role: turn.role, // 'user' o 'model'
+          parts: [{ text: turn.content }],
+        });
+      });
+    }
+
+    // Añadir el turno actual al final
+    contents.push({
+      role: "user",
+      parts: currentUserParts,
+    });
 
     const responseText = await callGeminiWithRetry(model, contents);
 
