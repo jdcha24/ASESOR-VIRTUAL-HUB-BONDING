@@ -23,8 +23,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 async function callGeminiWithRetry(
   model: ReturnType<GoogleGenerativeAI["getGenerativeModel"]>,
   contents: Content[],
-  maxRetries = 4,
-  initialDelayMs = 1500
+  maxRetries = 8,
+  initialDelayMs = 1000
 ): Promise<string> {
   let attempt = 0;
   while (attempt < maxRetries) {
@@ -35,17 +35,23 @@ async function callGeminiWithRetry(
       attempt++;
       const errorMessage =
         err instanceof Error ? err.message : String(err);
-      const isRetriable =
-        errorMessage.includes("429") ||
-        errorMessage.includes("503") ||
-        errorMessage.includes("ResourceExhausted") ||
-        errorMessage.includes("overloaded") ||
-        errorMessage.includes("Service Unavailable");
+      
+      // No reintentar en errores de credenciales o configuración (400, 403)
+      const isClientError = 
+        errorMessage.includes("400") || 
+        errorMessage.includes("403") || 
+        errorMessage.includes("API_KEY_INVALID") || 
+        errorMessage.includes("not valid");
+
+      const isRetriable = !isClientError;
 
       if (isRetriable && attempt < maxRetries) {
-        const delay = initialDelayMs * Math.pow(2, attempt - 1);
+        // Backoff exponencial con un pequeño jitter (desviación aleatoria) para no saturar
+        const jitter = Math.random() * 300;
+        const delay = initialDelayMs * Math.pow(1.8, attempt - 1) + jitter;
+        
         console.warn(
-          `[/api/query] Retry ${attempt}/${maxRetries} after ${delay}ms. Error: ${errorMessage}`
+          `[/api/query] Intento de reintento ${attempt}/${maxRetries} en ${Math.round(delay)}ms debido a error de demanda/red: ${errorMessage.slice(0, 120)}`
         );
         await new Promise((res) => setTimeout(res, delay));
       } else {
@@ -53,7 +59,7 @@ async function callGeminiWithRetry(
       }
     }
   }
-  throw new Error("Se superó el número máximo de reintentos con Gemini.");
+  throw new Error("Se superó el número máximo de reintentos con Gemini debido a alta demanda.");
 }
 
 export async function POST(req: NextRequest) {
