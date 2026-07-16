@@ -31,12 +31,6 @@ const NAV_ITEMS = [
     roles: ["supervisor", "quality_engineer"],
   },
   {
-    href: "/admin",
-    label: "Auditoría",
-    icon: BarChart3,
-    roles: ["quality_engineer"],
-  },
-  {
     href: "/settings",
     label: "Configuración",
     icon: Settings,
