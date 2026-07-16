@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ── Documentos de Procedimientos (Propiedad Intelectual) ──
+# Los PDFs NO se suben a GitHub por seguridad y confidencialidad.
+# Coloca los PDFs manualmente en la carpeta /documents en cada entorno.
+# Ver: documents/README.md para instrucciones.
+documents/*.pdf
